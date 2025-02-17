@@ -1,0 +1,9 @@
+echo '{
+  "version": 2,
+  "routes": [
+    { "src": "/webhook", "dest": "/index.js" }
+  ]
+}' > vercel.json
+
+
+
