@@ -10,6 +10,7 @@ app.get("/", (req, res) => {
 });
 
 // ✅ 1. Webhook para verificación de Meta
+// ✅ 1. Webhook para verificación de Meta
 app.get("/webhook", (req, res) => {
     const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 
@@ -17,10 +18,11 @@ app.get("/webhook", (req, res) => {
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    if (mode && token === VERIFY_TOKEN) {
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
         console.log("✅ Webhook verificado correctamente.");
         res.status(200).send(challenge);
     } else {
+        console.error("❌ Verificación fallida. Modo:", mode, "Token recibido:", token);
         res.sendStatus(403);
     }
 });
