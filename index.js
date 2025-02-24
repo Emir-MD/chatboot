@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 require("dotenv").config();
@@ -8,19 +9,20 @@ app.use(express.json());
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "chatbotElChel2024";
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN || "A1b2C3d4E5f6G7h7";
 const IG_ACCESS_TOKEN = process.env.IG_ACCESS_TOKEN || "A1b2C3d4E5f6G7h8";
+const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || "PENDIENTE"; // Para WhatsApp
 
 // ✅ Página de inicio
 app.get("/", (req, res) => {
   res.send("Chatbot de El Chel está activo 🚀");
 });
 
-// ✅ 1. Webhook de verificación para Meta
+// ✅ Webhook de verificación para Meta (Messenger, Instagram y WhatsApp)
 app.get("/webhook", (req, res) => {
     const mode = req.query["hub.mode"];
     const token = req.query["hub.verify_token"];
     const challenge = req.query["hub.challenge"];
 
-    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+    if (mode && token === VERIFY_TOKEN) {
         console.log("✅ Webhook verificado correctamente.");
         res.status(200).send(challenge);
     } else {
@@ -29,7 +31,7 @@ app.get("/webhook", (req, res) => {
     }
 });
 
-// ✅ 2. Webhook para recibir mensajes
+// ✅ Webhook para recibir mensajes de Messenger e Instagram
 app.post("/webhook", async (req, res) => {
     console.log("📩 Evento recibido:", JSON.stringify(req.body, null, 2));
 
@@ -53,7 +55,7 @@ app.post("/webhook", async (req, res) => {
     res.sendStatus(200);
 });
 
-// ✅ 3. Función para manejar mensajes según la opción elegida
+// ✅ Función para manejar mensajes según la opción elegida
 async function manejarMensaje(senderId, text) {
     if (text.includes("menu") || text.includes("menú")) {
         await enviarMensaje(senderId, "📋 *Menú para llevar:* \n\n1Kg de cochinita, relleno negro, lomo adobado o lechón - *$460*\n1/2 Kg de cochinita, relleno negro, lomo adobado o lechón - *$230*\n\nExtras:\n- Sopa de lima 1Lt - *$95*\n- Tortilla para panucho (1 pieza) - *$6*\n- Orden de cebolla morada, salsa de escabeche o crema de habanero (200g) - *$27*\n\nMás información en 👉 [elchel.mx](https://elchel.mx)");
@@ -67,20 +69,17 @@ async function manejarMensaje(senderId, text) {
             { title: "Instagram", url: "https://www.instagram.com/elchel_oficial/" },
             { title: "Página Oficial", url: "https://elchel.mx" }
         ]);
-    } else if (text.includes("hablar") || text.includes("agente")) {
-        await enviarBotonLlamada(senderId, "☎️ ¿Necesitas hablar con alguien? Llama a nuestra matriz:", "tel:+525566030293");
     } else {
         await enviarBotones(senderId, "¡Hola! 👋 Soy el chatbot de *El Chel* 🍽️. ¿Cómo puedo ayudarte?", [
             { title: "Ver el menú 📋", payload: "MENU" },
             { title: "Promociones 🎉", payload: "PROMOCIONES" },
             { title: "Ubicaciones 📍", payload: "UBICACIONES" },
-            { title: "Contacto 📱", payload: "CONTACTO" },
-            { title: "Hablar con alguien ☎️", payload: "HABLAR_AGENTE" }
+            { title: "Contacto 📱", payload: "CONTACTO" }
         ]);
     }
 }
 
-// ✅ 4. Función para enviar respuestas de texto
+// ✅ Función para enviar respuestas de texto
 async function enviarMensaje(senderId, mensaje) {
     try {
         await axios.post(
@@ -96,7 +95,7 @@ async function enviarMensaje(senderId, mensaje) {
     }
 }
 
-// ✅ 5. Función para enviar botones con enlaces
+// ✅ Función para enviar botones con enlaces
 async function enviarBotones(senderId, mensaje, botones) {
     try {
         let elements = botones.map(btn => ({
@@ -122,31 +121,6 @@ async function enviarBotones(senderId, mensaje, botones) {
         console.log("✅ Botones enviados.");
     } catch (error) {
         console.error("❌ Error enviando botones:", error.response ? error.response.data : error.message);
-    }
-}
-
-// ✅ 6. Función para enviar botón de llamada
-async function enviarBotonLlamada(senderId, mensaje, numero) {
-    try {
-        await axios.post(
-            `https://graph.facebook.com/v17.0/me/messages?access_token=${FB_ACCESS_TOKEN}`,
-            {
-                recipient: { id: senderId },
-                message: {
-                    attachment: {
-                        type: "template",
-                        payload: {
-                            template_type: "button",
-                            text: mensaje,
-                            buttons: [{ type: "phone_number", title: "Llamar 📞", payload: numero }]
-                        }
-                    }
-                }
-            }
-        );
-        console.log("✅ Botón de llamada enviado.");
-    } catch (error) {
-        console.error("❌ Error enviando botón de llamada:", error.response ? error.response.data : error.message);
     }
 }
 
