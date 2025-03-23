@@ -1,4 +1,5 @@
-import axios from "axios";
+
+/*import axios from "axios";
 
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "chatbotElChel2024";
 const FB_ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN || "A1b2C3d4E5f6G7h7";
@@ -105,4 +106,22 @@ export default async function handler(req, res) {
     res.setHeader("Allow", ["GET", "POST"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
+}
+*/
+export default function handler(req, res) {
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "chatbotElChel2024";
+
+  if (req.method === "GET") {
+    if (mode && token === VERIFY_TOKEN) {
+      return res.status(200).send(challenge);
+    } else {
+      return res.status(403).send("Token inválido");
+    }
+  }
+
+  return res.status(405).send("Método no permitido");
 }
