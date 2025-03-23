@@ -16,7 +16,7 @@ module.exports = async (req, res) => {
       res.status(200).send(challenge);
     } else {
       console.error("❌ Verificación fallida.");
-      res.sendStatus(403);
+      res.status(403).send("Forbidden");
     }
   } else if (req.method === "POST") {
     console.log("📩 Evento recibido:", JSON.stringify(req.body, null, 2));
@@ -37,10 +37,10 @@ module.exports = async (req, res) => {
       }
     }
 
-    res.sendStatus(200);
+    res.status(200).send("EVENT_RECEIVED");
   } else {
     res.setHeader("Allow", "GET, POST");
-    res.status(405).end("Method Not Allowed");
+    res.status(405).send("Method Not Allowed");
   }
 };
 
