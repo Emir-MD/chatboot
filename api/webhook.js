@@ -1,3 +1,27 @@
+export default function handler(req, res) {
+  const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "chatbotElChel2024";
+
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
+
+  if (req.method === "GET") {
+    if (mode === "subscribe" && token === VERIFY_TOKEN) {
+      console.log("✅ Webhook verificado.");
+      return res.status(200).send(challenge);
+    } else {
+      console.log("❌ Verificación fallida.");
+      return res.status(403).send("Token inválido");
+    }
+  }
+
+  if (req.method === "POST") {
+    console.log("📩 Evento recibido:", JSON.stringify(req.body, null, 2));
+    return res.sendStatus(200);
+  }
+
+  return res.status(405).send("Método no permitido");
+}
 
 /*import axios from "axios";
 
@@ -108,20 +132,3 @@ export default async function handler(req, res) {
   }
 }
 */
-export default function handler(req, res) {
-  const mode = req.query["hub.mode"];
-  const token = req.query["hub.verify_token"];
-  const challenge = req.query["hub.challenge"];
-
-  const VERIFY_TOKEN = process.env.VERIFY_TOKEN || "chatbotElChel2024";
-
-  if (req.method === "GET") {
-    if (mode && token === VERIFY_TOKEN) {
-      return res.status(200).send(challenge);
-    } else {
-      return res.status(403).send("Token inválido");
-    }
-  }
-
-  return res.status(405).send("Método no permitido");
-}
